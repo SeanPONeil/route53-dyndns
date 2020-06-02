@@ -2,3 +2,4 @@
 venv/
 .vscode/
 docker-compose.yml
+README.md
