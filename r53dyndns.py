@@ -10,7 +10,15 @@ import dns.resolver
 import socket
 import boto3
 
-def get_current_ip():
+def get_current_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    current_ip = s.getsockname()[0]
+    s.close()
+    logging.info(f'Current local IP address: {current_ip}')
+    return current_ip
+    
+def get_current_public_ip():
     resolver = dns.resolver.Resolver()
     resolver.nameservers=[socket.gethostbyname('resolver1.opendns.com')]
 
@@ -118,6 +126,7 @@ def main():
     parser.add_argument('-r', '--record', help='specify the DNS A record to update')
     parser.add_argument('-v', '--verbose', help='enable verbose output',
                         action="store_true")
+    parser.add_argument('-l', '--local', help='Update Route53 A record with local IP address of the system instead of the external IP address.')
     args = parser.parse_args()
 
     if args.record is None:
@@ -137,7 +146,13 @@ def main():
     zone_to_update = '.'.join(record_to_update.split('.')[-2:])
     logging.info(f'Route53 zone: {zone_to_update}')
 
-    current_ip = get_current_ip()
+    if args.local:
+        print('Getting current local IP address')
+        current_ip = get_current_local_ip()
+    else:
+        print('Getting current public IP address')
+        current_ip = get_current_public_ip()
+
     hosted_zone_id = get_zone(zone_to_update)
     record_ip = get_record_ip(hosted_zone_id, record_to_update)
 
