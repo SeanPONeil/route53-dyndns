@@ -10,6 +10,11 @@ import dns.resolver
 import socket
 import boto3
 
+def get_ip_of_hostname(hostname):
+    ip = socket.gethostbyname(hostname)
+    logging.info(f'IP Address of ${hostname}: ${ip}')
+    return ip
+
 def get_current_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
@@ -126,7 +131,8 @@ def main():
     parser.add_argument('-r', '--record', help='specify the DNS A record to update')
     parser.add_argument('-v', '--verbose', help='enable verbose output',
                         action="store_true")
-    parser.add_argument('-l', '--local', help='Update Route53 A record with local IP address of the system instead of the external IP address.')
+    parser.add_argument('-l', '--local', default=False, help='Update Route53 A record with local IP address of the system instead of the external IP address.')
+    parser.add_argument('-h', '--ip_of_hostname', default=False, help='Update Route53 A record with IP address of provided hostname.')
     args = parser.parse_args()
 
     if args.record is None:
@@ -146,7 +152,10 @@ def main():
     zone_to_update = '.'.join(record_to_update.split('.')[-2:])
     logging.info(f'Route53 zone: {zone_to_update}')
 
-    if args.local:
+    if args.ip_of_hostname:
+        print(f'Getting IP address of ${args.ip_of_hostname}')
+        current_ip = get_ip_of_hostname(args.ip_of_hostname)
+    elif args.local:
         print('Getting current local IP address')
         current_ip = get_current_local_ip()
     else:
