@@ -132,7 +132,7 @@ def main():
     parser.add_argument('-v', '--verbose', help='enable verbose output',
                         action="store_true")
     parser.add_argument('-l', '--local', default=False, help='Update Route53 A record with local IP address of the system instead of the external IP address.')
-    parser.add_argument('-h', '--ip_of_hostname', default=False, help='Update Route53 A record with IP address of provided hostname.')
+    parser.add_argument('--ip_of_hostname', default=False, help='Update Route53 A record with IP address of provided hostname.')
     args = parser.parse_args()
 
     if args.record is None:
