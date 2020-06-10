@@ -7,6 +7,7 @@ import argparse
 import logging
 import dns
 import dns.resolver
+import os
 import socket
 import boto3
 
@@ -131,9 +132,10 @@ def main():
     parser.add_argument('-r', '--record', help='specify the DNS A record to update')
     parser.add_argument('-v', '--verbose', help='enable verbose output',
                         action="store_true")
-    parser.add_argument('-l', '--local', default=False, help='Update Route53 A record with local IP address of the system instead of the external IP address.')
-    parser.add_argument('--ip_of_hostname', default=False, help='Update Route53 A record with IP address of provided hostname.')
     args = parser.parse_args()
+
+    route53_record_ip = os.getenv('ROUTE53_DOMAIN_A_RECORD_IP')
+    route53_record_ip_local = os.getenv('ROUTE53_DOMAIN_A_RECORD_IP_LOCAL')
 
     if args.record is None:
         logging.error('No record specified')
@@ -152,10 +154,10 @@ def main():
     zone_to_update = '.'.join(record_to_update.split('.')[-2:])
     logging.info(f'Route53 zone: {zone_to_update}')
 
-    if args.ip_of_hostname:
-        print(f'Getting IP address of ${args.ip_of_hostname}')
-        current_ip = get_ip_of_hostname(args.ip_of_hostname)
-    elif args.local:
+    if route53_record_ip:
+        print(f'Updating A record with {route53_record_ip}')
+        current_ip = route53_record_ip
+    elif route53_record_ip_local:
         print('Getting current local IP address')
         current_ip = get_current_local_ip()
     else:
